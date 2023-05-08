@@ -1,47 +1,48 @@
 "use client"
 
+import { isValidEmail, isValidNumber } from "./utils";
+import { useEffect, useState } from "react";
+
+import { BACKEND_BASE_URL } from "./constants";
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import styles from "./onboarding.module.css";
-import { useState } from 'react';
 
 const questions = [
     {
         text: "What is the name of your store?",
         type: "text",
         input_label: "Store name",
-        input_type: "text"
     },
     {
         text: "What is the balance left on your gift card?",
-        type: "text",
+        type: "number",
         input_label: "Balance",
-        input_type: "text",
     },
     {
         text: "What price are you selling at?",
-        type: "text",
+        type: "number",
         input_label: "Price",
-        input_type: "text",
     },
     {
         text: "Which network would you like to receive funds at?",
-        type: "text",
+        type: "select",
         options: ["Polygon", "Ethereum"],
         input_label: "Network",
-        input_type: "text",
     },
     {
         text: "What address do you want to receive funds at?",
         type: "text",
         input_label: "Address",
-        input_type: "text",
     },
     {
         text: "What's your email address?",
-        type: "text",
+        type: "email",
         input_label: "Email",
-        input_type: "text"
     },
 ]
 
@@ -50,28 +51,52 @@ export default function Onboarding() {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
 
+    const LOCAL_STORAGE_ANSWERS_KEY = "answers";
+
+    useEffect(() => {
+        window.addEventListener("beforeunload", handlePageRefresh);
+        return () => {
+            window.removeEventListener("beforeunload", handlePageRefresh);
+        };
+    }, []);
+
+    const handlePageRefresh = (e) => {
+        const saved_answers = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ANSWERS_KEY))
+        if (saved_answers) {
+            sendResult(saved_answers);
+            localStorage.removeItem(LOCAL_STORAGE_ANSWERS_KEY);
+        }
+
+        e.preventDefault();
+        e.returnValue = "";
+    }
+
     const handleAnswerChange = (e) => {
         const newAnswers = answers.slice();
         newAnswers[currentQuestion] = e.target.value;
         setAnswers(newAnswers);
+
+        // saved to local storage to access it on the page refresh
+        localStorage.setItem(LOCAL_STORAGE_ANSWERS_KEY, JSON.stringify(newAnswers));
     }
 
     const handlePreviousQuestion = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
-         }
+        }
     }
 
     const handleNextQuestion = () => {
         if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
         } else {
-            sendResult();
+            sendResult(answers);
+            localStorage.removeItem(LOCAL_STORAGE_ANSWERS_KEY);
             setIsFinished(true);
         }
     }
 
-    const sendResult = () => {
+    const sendResult = (answers) => {
         const result = {
             store_name: answers[0],
             gift_card_balance: answers[1],
@@ -80,7 +105,7 @@ export default function Onboarding() {
             wallet_address: answers[4],
             email_address: answers[5],
         }
-        fetch('http://0.0.0.0:8000/surveys', {
+        fetch(`${BACKEND_BASE_URL}/surveys/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -101,9 +126,64 @@ export default function Onboarding() {
                 <TextField
                     value={answers[currentQuestion]}
                     label={data.input_label}
-                    type={data.input_type}
+                    type="text"
                     onChange={handleAnswerChange}
                 />
+            )
+        }
+        else if (data.type === "number") {
+            input = (
+                <TextField
+                    value={answers[currentQuestion]}
+                    label={data.input_label}
+                    type="text"
+                    error={!isValidNumber(answers[currentQuestion])}
+                    helperText={
+                        !isValidNumber(answers[currentQuestion]) ?
+                            "Invalid number" :
+                            ""
+                    }
+                    onChange={handleAnswerChange}
+                    // onKeyPress={(event) => {
+                    //     if (!isValidNumber(event.key)) {
+                    //         event.preventDefault();
+                    //     }
+                    // }}
+                />
+            )
+        }
+        else if (data.type === "email") {
+            input = (
+                <TextField
+                    value={answers[currentQuestion]}
+                    label={data.input_label}
+                    type="email"
+                    error={!isValidEmail(answers[currentQuestion])}
+                    helperText={
+                        !isValidEmail(answers[currentQuestion]) ?
+                            "Invalid email format" :
+                            ""
+                    }
+                    onChange={handleAnswerChange}
+                />
+            )
+        }
+        else if (data.type === "select") {
+            input = (
+                <FormControl>
+                    <InputLabel>{data.input_label}</InputLabel>
+                    <Select
+                        value={answers[currentQuestion]}
+                        label={data.input_label}
+                        onChange={handleAnswerChange}
+                    >
+                        {data.options.map((option) => (
+                            <MenuItem key={option} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
             )
         }
 
@@ -118,7 +198,7 @@ export default function Onboarding() {
                 <h2>Seller Onboarding Form</h2>
             </div>
 
-            { isFinished ?
+            {isFinished ?
                 (
                     <div> Thank you for your submission!</div>
                 )
@@ -128,7 +208,9 @@ export default function Onboarding() {
                             <h4 className={styles['onboarding-question-title']}>
                                 {questions[currentQuestion].text}
                             </h4>
-                            {getCurrentQuestionInput(currentQuestion)}
+                            <div className={styles["onboarding-question-input"]}>
+                                {getCurrentQuestionInput(currentQuestion)}
+                            </div>
                         </div>
 
                         <div className="onboarding-navigation">
@@ -136,7 +218,7 @@ export default function Onboarding() {
                                 className={styles["onboarding-back-button"]}
                                 variant="contained"
                                 onClick={handlePreviousQuestion}
-                                disabled={currentQuestion == 0 }
+                                disabled={currentQuestion == 0}
                             >
                                 Back
                             </Button>
@@ -146,7 +228,7 @@ export default function Onboarding() {
                                 variant="contained"
                                 onClick={handleNextQuestion}
                             >
-                                { currentQuestion === questions.length - 1 ? "Finish" : "Next"}
+                                {currentQuestion === questions.length - 1 ? "Finish" : "Next"}
                             </Button>
                         </div>
                     </div>

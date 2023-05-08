@@ -28,8 +28,8 @@ async def read_root():
 
 
 @app.post("/surveys/")
-async def add_survey_result(data: SurveyCreate):
-    survey = Survey(**data.dict())
+async def add_survey_result(item: SurveyCreate):
+    survey = Survey(**item.dict())
     RESULTS.append(survey)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
