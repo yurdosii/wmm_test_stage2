@@ -55,7 +55,6 @@ vercel .
 
 If the deployment fails, one of the possible reasons could be the usage of `"str | None"` instead of `"Optional[str]"`. After the first deployment I got HTTP status code 500, and after this fix it worked.
 
-
 ### Deploy Next.js via Vercel
 1. Create new project in Vercel UI
 2. Select `"Next.js"` as "Framework preset" and `"/frontend"` as a root directory
