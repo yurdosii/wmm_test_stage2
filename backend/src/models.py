@@ -1,15 +1,16 @@
 import uuid
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
 
 class SurveyBase(BaseModel):
-    store_name: str | None
-    gift_card_balance: str | None
-    gift_card_price: str | None
-    network: str | None
-    wallet_address: str | None
-    email_address: str | None
+    store_name: Optional[str]
+    gift_card_balance: Optional[str]
+    gift_card_price: Optional[str]
+    network: Optional[str]
+    wallet_address: Optional[str]
+    email_address: Optional[str]
 
 
 class SurveyCreate(SurveyBase):

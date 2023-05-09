@@ -2,17 +2,15 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 
+from src.wmm_backend.settings import CORS_ALLOWED_ORIGINS
+
 from .models import Survey, SurveyCreate
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-    "http://0.0.0.0:3000",
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

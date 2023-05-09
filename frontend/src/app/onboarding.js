@@ -7,6 +7,7 @@ import { BACKEND_BASE_URL } from "./constants";
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
+import Link from 'next/link';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
@@ -200,7 +201,10 @@ export default function Onboarding() {
 
             {isFinished ?
                 (
-                    <div> Thank you for your submission!</div>
+                    <div>
+                        Thank you for your submission!
+                        (Results can be seen <Link href="/results">here</Link>)
+                    </div>
                 )
                 : (
                     <div className="onboarding-form">
