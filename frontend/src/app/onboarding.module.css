@@ -18,6 +18,10 @@
     width: 100%;
 }
 
+.onboarding-back-button {
+    margin-right: 0.5vw;
+}
+
 .onboarding-next-button {
-    margin-left: 0.5vw;
+    margin-left: 0.5vw !important;
 }

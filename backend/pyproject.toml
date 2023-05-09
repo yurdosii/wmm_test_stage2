@@ -10,6 +10,7 @@ packages = [{include = "wmm_backend"}]
 python = "^3.11"
 fastapi = "^0.95.1"
 uvicorn = {extras = ["standard"], version = "^0.22.0"}
+environs = "^9.5.0"
 
 
 [tool.poetry.group.dev.dependencies]
