@@ -62,14 +62,17 @@ export default function Onboarding() {
     }, []);
 
     const handlePageRefresh = (e) => {
+        sendSavedAnswers()
+        e.preventDefault();
+        e.returnValue = "";
+    }
+
+    const sendSavedAnswers = () => {
         const saved_answers = JSON.parse(localStorage.getItem(LOCAL_STORAGE_ANSWERS_KEY))
         if (saved_answers) {
             sendResult(saved_answers);
             localStorage.removeItem(LOCAL_STORAGE_ANSWERS_KEY);
         }
-
-        e.preventDefault();
-        e.returnValue = "";
     }
 
     const handleAnswerChange = (e) => {
@@ -91,8 +94,7 @@ export default function Onboarding() {
         if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
         } else {
-            sendResult(answers);
-            localStorage.removeItem(LOCAL_STORAGE_ANSWERS_KEY);
+            sendSavedAnswers();
             setIsFinished(true);
         }
     }
@@ -113,9 +115,9 @@ export default function Onboarding() {
             },
             body: JSON.stringify(result),
         })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     }
 
     const getCurrentQuestionInput = (currentQuestion) => {
